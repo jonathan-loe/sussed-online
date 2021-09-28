@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using sussed_online.backend.Models;
+using sussed_online.backend.Services;
 
 namespace sussed_online.backend.Controllers
 {
@@ -6,28 +8,40 @@ namespace sussed_online.backend.Controllers
     [Route("[controller]")]
     public class SussedController : ControllerBase
     {
-        public SussedController()
+        private readonly ISussedService _sussedService;
+        public SussedController(ISussedService sussedService)
         {
+            _sussedService = sussedService;
         }
 
-        [HttpPost]
-        [Route("/users")]
-        public void CreateUser(string name)
+        [HttpPost("users")]
+        public IActionResult CreateUser([FromBody]CreateUserRequest request)
         {
+            int id = _sussedService.CreateUser(request.Name);
+            return new OkObjectResult(id);
         }
 
         [HttpGet]
-        public void SelectedUserGetQuestion(int userId)
+        public IActionResult SelectedUserGetQuestion(int userId)
         {
-            
+            var question = _sussedService.GetQuestion(userId);
+
+            return new OkObjectResult(question);
         }
 
         [HttpPost]
-        public void SelectedUserAnswer(int userId, int questionId, int answerId)
+        public IActionResult SelectedUserAnswer([FromBody]UserAnswerRequest request)
         {
-            // Store the answer
+           _sussedService.SaveAnswer(request);
+           return Ok();
         }
+        [HttpGet]
+        public IActionResult OtherUserGetQuestion(int userId)
+        {
+            var question = _sussedService.GetOtherUserQuestion(userId);
 
+            return new OkObjectResult(question);
+        }
         [HttpPost]
         public int OtherUserAnswer(int userId, int questionId, int answerId)
         {
